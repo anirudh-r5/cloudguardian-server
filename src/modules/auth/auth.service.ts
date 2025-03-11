@@ -4,6 +4,8 @@ import {
   ConfidentialClientApplication,
   Configuration,
   AuthorizationUrlRequest,
+  AuthenticationResult,
+  AuthorizationCodeRequest,
 } from '@azure/msal-node';
 
 @Injectable()
@@ -25,7 +27,7 @@ export class AuthService {
     const entraConfig: Configuration = {
       auth: {
         clientId: this.configService.get<string>('ENTRA_CLIENT_ID'),
-        authority: `${this.configService.get<string>('ENTRA_CLIENT_ID')}${this.configService.get<string>('ENTRA_CLIENT_ID')}`,
+        authority: `${this.configService.get<string>('ENTRA_INSTANCE')}${this.configService.get<string>('ENTRA_TENANT_ID')}`,
         clientSecret: this.configService.get<string>('ENTRA_CLIENT_SECRET'),
       },
     };
@@ -37,6 +39,27 @@ export class AuthService {
       scopes: ['user.read'],
       redirectUri: this.configService.get<string>('ENTRA_REDIRECT_URL'),
     };
-    return await this.entraClient.getAuthCodeUrl(authUrlRequest);
+    try {
+      return await this.entraClient.getAuthCodeUrl(authUrlRequest);
+    } catch (error) {
+      console.log(error);
+      return '';
+    }
+  }
+
+  async processRedirect(data: string): Promise<AuthenticationResult> {
+    const tokenData: AuthorizationCodeRequest = {
+      code: data,
+      scopes: ['user.read'],
+      redirectUri: this.configService.get<string>('ENTRA_REDIRECT_URL'),
+    };
+
+    const tokenResponse = await this.entraClient.acquireTokenByCode(tokenData);
+
+    console.log(`Access Token: ${tokenResponse.accessToken}`);
+    console.log(`ID Token: ${tokenResponse.idToken}`);
+    console.log(`Full response: ${tokenResponse}`);
+
+    return tokenResponse;
   }
 }
