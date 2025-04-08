@@ -14,6 +14,7 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
+    console.log(request);
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException('User not logged in!');
@@ -27,8 +28,14 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+  private extractTokenFromHeader(request: Request): string {
+    try {
+      const [type, token] = request.headers?.authorization?.split(' ') ?? [];
+      return type === 'Bearer' ? token : '';
+    } catch (error) {
+      throw new UnauthorizedException('No auth headers found!', {
+        cause: error,
+      });
+    }
   }
 }
