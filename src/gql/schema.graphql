@@ -19,5 +19,4 @@ type Resource {
 
 type Query {
     identities: [Identity!]!
-    awsResources: [Resource!]!
 }

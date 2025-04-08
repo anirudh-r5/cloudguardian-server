@@ -1,0 +1,10 @@
+type AzureUser {
+    id: ID!
+    displayName: String
+    userPrincipalName: String
+    mail: String
+}
+
+extend type Query {
+    azureUsers: [AzureUser]!
+}

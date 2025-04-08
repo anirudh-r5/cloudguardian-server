@@ -6,6 +6,7 @@ import { AwsModule } from './modules/aws/aws.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
+import { AzureModule } from './modules/azure/azure.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { join } from 'path';
     }),
     AuthModule,
     AwsModule,
+    AzureModule,
   ],
 })
 export class AppModule {}

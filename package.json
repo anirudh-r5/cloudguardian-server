@@ -27,6 +27,8 @@
     "@aws-sdk/client-organizations": "^3.782.0",
     "@aws-sdk/client-resource-groups-tagging-api": "^3.782.0",
     "@aws-sdk/client-sso-admin": "^3.782.0",
+    "@azure/identity": "^4.8.0",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "@nestjs/apollo": "^13.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.1",
@@ -46,6 +48,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
+    "@microsoft/microsoft-graph-types": "^2.40.0",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
