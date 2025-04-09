@@ -2,10 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientSecretCredential } from '@azure/identity';
 import { Client } from '@microsoft/microsoft-graph-client';
+import { AuthorizationManagementClient } from '@azure/arm-authorization';
+import { AzureRole } from '../../graphql';
 
 @Injectable()
 export class AzureService {
   private graphClient: Client;
+  private authClient: AuthorizationManagementClient;
   constructor(private configService: ConfigService) {
     const credentials = new ClientSecretCredential(
       this.configService.get<string>('azure.tenantId') as string,
@@ -22,10 +25,42 @@ export class AzureService {
         },
       },
     });
+    this.authClient = new AuthorizationManagementClient(
+      credentials,
+      this.configService.get<string>('azure.subscription') as string,
+    );
   }
 
   async getUsers() {
-    const result = await this.graphClient.api('/users').get();
+    const result = await this.graphClient
+      .api('/users')
+      .header('ConsistencyLevel', 'eventual')
+      .query('$count=true')
+      .select(['id', 'displayName', 'userPrincipalName', 'mail'])
+      .filter('mail ne null')
+      .get();
+    console.log(`users: ${result.value}`);
     return result.value;
+  }
+
+  async getAllRoleAssignmentsByPrincipalId(): Promise<
+    Record<string, AzureRole[]>
+  > {
+    const roleMap: Record<string, AzureRole[]> = {};
+
+    for await (const assignment of this.authClient.roleAssignments.listForSubscription()) {
+      const principalId = assignment.principalId!;
+      const roleDef = await this.authClient.roleDefinitions.getById(
+        assignment.roleDefinitionId!,
+      );
+
+      if (!roleMap[principalId]) roleMap[principalId] = [];
+      roleMap[principalId].push({
+        roleName: roleDef.roleName as string,
+        scope: assignment.scope as string,
+      });
+    }
+    console.log(`roles: ${roleMap}`);
+    return roleMap;
   }
 }

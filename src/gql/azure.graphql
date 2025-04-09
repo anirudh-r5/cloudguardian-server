@@ -3,6 +3,11 @@ type AzureUser {
     displayName: String
     userPrincipalName: String
     mail: String
+    roles: [AzureRole]!
+}
+type AzureRole {
+    roleName: String!
+    scope: String!
 }
 
 extend type Query {

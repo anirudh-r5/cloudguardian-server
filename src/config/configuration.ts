@@ -13,6 +13,7 @@ export const AppConfig = () => ({
     clientId: process.env.AZURE_CLIENT_ID,
     tenantId: process.env.AZURE_TENANT_ID,
     secret: process.env.AZURE_CLIENT_SECRET,
+    subscription: process.env.AZURE_SUBSCRIPTION_ID,
   },
 });
 
@@ -25,5 +26,6 @@ export const ConfigSchema = z
     AZURE_CLIENT_ID: z.string().uuid(),
     AZURE_TENANT_ID: z.string().uuid(),
     AZURE_CLIENT_SECRET: z.string(),
+    AZURE_SUBSCRIPTION_ID: z.string().uuid(),
   })
   .required({ SUPABASE_URL: true, SUPABASE_ANON_KEY: true });
