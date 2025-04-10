@@ -1,8 +1,8 @@
-type AzureUser {
+type AzureIdentity implements Identity{
     id: ID!
-    displayName: String
-    userPrincipalName: String
-    mail: String
+    name: String!
+    email: String
+    cloudProvider: String!
     roles: [AzureRole]!
 }
 type AzureRole {
@@ -11,5 +11,5 @@ type AzureRole {
 }
 
 extend type Query {
-    azureUsers: [AzureUser]!
+    azureUsers: [AzureIdentity]!
 }

@@ -4,6 +4,7 @@ import { ClientSecretCredential } from '@azure/identity';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { AuthorizationManagementClient } from '@azure/arm-authorization';
 import { AzureRole } from '../../graphql';
+import { User } from '@microsoft/microsoft-graph-types';
 
 @Injectable()
 export class AzureService {
@@ -36,11 +37,11 @@ export class AzureService {
       .api('/users')
       .header('ConsistencyLevel', 'eventual')
       .query('$count=true')
-      .select(['id', 'displayName', 'userPrincipalName', 'mail'])
+      .select(['id', 'displayName', 'mail'])
       .filter('mail ne null')
       .get();
-    console.log(`users: ${result.value}`);
-    return result.value;
+    console.log(result.value);
+    return result.value as User[];
   }
 
   async getAllRoleAssignmentsByPrincipalId(): Promise<
@@ -60,7 +61,6 @@ export class AzureService {
         scope: assignment.scope as string,
       });
     }
-    console.log(`roles: ${roleMap}`);
     return roleMap;
   }
 }

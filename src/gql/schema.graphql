@@ -1,22 +1,6 @@
-type Identity {
+interface Identity {
     id: ID!
     name: String!
     email: String
     cloudProvider: String!
-    roles: [String!]!
-}
-
-type Tag {
-    key: String!
-    value: String!
-}
-
-type Resource {
-    arn: String!
-    type: String
-    tags: [Tag!]!
-}
-
-type Query {
-    identities: [Identity!]!
 }

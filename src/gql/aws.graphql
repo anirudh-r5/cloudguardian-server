@@ -1,0 +1,11 @@
+type AwsIdentity implements Identity {
+    id: ID!
+    name: String!
+    email: String
+    cloudProvider: String!
+    roles: [String]!
+}
+
+type Query {
+    awsUsers: [AwsIdentity]!
+}
