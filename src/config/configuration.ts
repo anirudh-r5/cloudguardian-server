@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const AppConfig = () => ({
   port: Number(process.env.PORT),
+  db: process.env.DATABASE_URL,
   auth: {
     url: process.env.SUPABASE_URL,
     key: process.env.SUPABASE_ANON_KEY,
@@ -20,6 +21,7 @@ export const AppConfig = () => ({
 export const ConfigSchema = z
   .object({
     port: z.number().int().default(3001),
+    DATABASE_URL: z.string(),
     SUPABASE_URL: z.string().url(),
     SUPABASE_ANON_KEY: z.string(),
     AWS_ACCOUNT_ID: z.string(),

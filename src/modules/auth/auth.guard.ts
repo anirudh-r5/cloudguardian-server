@@ -21,10 +21,12 @@ export class AuthGuard implements CanActivate {
     } else {
       request = context.switchToHttp().getRequest();
     }
+    console.log(request);
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException('User not logged in!');
     }
+    console.log(token);
     const {
       data: { user },
       error,

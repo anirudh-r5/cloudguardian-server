@@ -7,6 +7,8 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { AzureModule } from './modules/azure/azure.module';
+import { DatabaseModule } from './modules/database/database.module';
+import { UserModule } from './modules/users/user.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { AzureModule } from './modules/azure/azure.module';
         path: join(process.cwd(), 'src/graphql.ts'),
       },
     }),
+    DatabaseModule,
+    UserModule,
     AuthModule,
     AwsModule,
     AzureModule,
