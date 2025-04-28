@@ -8,7 +8,11 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { AzureModule } from './modules/azure/azure.module';
 import { DatabaseModule } from './modules/database/database.module';
-import { UserModule } from './modules/users/user.module';
+import { IdentitiesModule } from './modules/identities/identities.module';
+import { UpdatesModule } from './modules/updates/updates.module';
+import { UsersModule } from './modules/users/users.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { AssignmentsModule } from './modules/assignments/assignments.module';
 
 @Module({
   imports: [
@@ -24,10 +28,14 @@ import { UserModule } from './modules/users/user.module';
       },
     }),
     DatabaseModule,
-    UserModule,
+    IdentitiesModule,
     AuthModule,
     AwsModule,
     AzureModule,
+    UpdatesModule,
+    UsersModule,
+    RolesModule,
+    AssignmentsModule,
   ],
 })
 export class AppModule {}

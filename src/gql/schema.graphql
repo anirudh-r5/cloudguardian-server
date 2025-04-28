@@ -1,6 +1,4 @@
-interface Identity {
-    id: ID!
-    name: String!
-    email: String
-    cloudProvider: String!
+enum CloudProvider {
+    AWS
+    AZURE
 }

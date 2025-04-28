@@ -1,0 +1,15 @@
+type User {
+    id: ID!
+    identityId: String!
+    provider: CloudProvider
+    providerId: String!
+    username: String!
+}
+
+type Query {
+    getUsers: [User]!
+    getUserById(id: ID!): User
+    getUserByProviderId(providerId: String!): User
+    getUserByUsername(username: String!): User
+    getUsersByProvider(provider: String!): [User]!
+}

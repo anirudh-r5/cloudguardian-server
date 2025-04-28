@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { ClientSecretCredential } from '@azure/identity';
 import { Client } from '@microsoft/microsoft-graph-client';
 import { AuthorizationManagementClient } from '@azure/arm-authorization';
-import { AzureRole } from '../../graphql';
 import { User } from '@microsoft/microsoft-graph-types';
+import { CloudIdentityType, RoleType } from '../utils/module-types';
 
 @Injectable()
 export class AzureService {
@@ -40,27 +40,56 @@ export class AzureService {
       .select(['id', 'displayName', 'mail'])
       .filter('mail ne null')
       .get();
-    console.log(result.value);
     return result.value as User[];
   }
 
-  async getAllRoleAssignmentsByPrincipalId(): Promise<
-    Record<string, AzureRole[]>
-  > {
-    const roleMap: Record<string, AzureRole[]> = {};
+  async getAllRoleAssignmentsByPrincipalId(): Promise<Map<string, string[]>> {
+    const roleMap: Map<string, string[]> = new Map();
 
     for await (const assignment of this.authClient.roleAssignments.listForSubscription()) {
       const principalId = assignment.principalId!;
-      const roleDef = await this.authClient.roleDefinitions.getById(
-        assignment.roleDefinitionId!,
-      );
-
-      if (!roleMap[principalId]) roleMap[principalId] = [];
-      roleMap[principalId].push({
-        roleName: roleDef.roleName as string,
-        scope: assignment.scope as string,
-      });
+      const roles = roleMap.get(principalId) ?? [];
+      roleMap.set(principalId, [...roles, assignment.roleDefinitionId!]);
     }
     return roleMap;
+  }
+
+  async getAzureUsers() {
+    const users = await this.getUsers();
+    const roleMap = await this.getAllRoleAssignmentsByPrincipalId();
+    const result: CloudIdentityType[] = users.map((user) => ({
+      id: user.id as string,
+      name: user.displayName as string,
+      email: user.mail as string,
+      cloudProvider: 'azure',
+      roles: roleMap[user.id as string] || [],
+    }));
+    return result;
+  }
+
+  async getAzureRoles() {
+    const roles: RoleType[] = [];
+    const roleAssignments = new Set(
+      [...(await this.getAllRoleAssignmentsByPrincipalId()).values()].flat(),
+    );
+    for (const role of roleAssignments) {
+      const roleDef = await this.authClient.roleDefinitions.getById(role);
+      const roleId = roleDef?.id ?? 'N/A';
+      const roleName = roleDef?.roleName ?? 'N/A';
+      const rolePerms =
+        roleDef.permissions?.map((p) => ({
+          actions: p.actions ?? [],
+          notActions: p.notActions ?? [],
+          dataActions: p.dataActions ?? [],
+          notDataActions: p.notDataActions ?? [],
+        })) ?? [];
+      roles.push({
+        id: roleId,
+        name: roleName,
+        cloudProvider: 'azure',
+        permissions: JSON.stringify(rolePerms),
+      });
+    }
+    return roles;
   }
 }

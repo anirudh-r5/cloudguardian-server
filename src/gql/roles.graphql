@@ -1,0 +1,12 @@
+type Role {
+    id: ID!
+    name: String!
+    permissions: String!
+    cloudProvider: CloudProvider!
+}
+
+extend type Query {
+    getRoles: [Role]!
+    getRoleById(id: ID!): Role
+    getRoleByName(name: String!): Role
+}

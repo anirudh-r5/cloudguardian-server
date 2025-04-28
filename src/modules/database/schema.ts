@@ -13,7 +13,6 @@ import { sql } from 'drizzle-orm';
 
 export const cgdb = pgSchema('cgdb');
 export const cspEnum = cgdb.enum('csp', ['aws', 'azure']);
-
 export const identities = cgdb.table(
   'identities',
   {
@@ -28,7 +27,7 @@ export const identities = cgdb.table(
   },
   (table) => [
     unique('identities_email_key').on(table.email),
-    pgPolicy('Enable all operations for authenticated users only', {
+    pgPolicy('Enable all operations for authenticated identities only', {
       as: 'permissive',
       for: 'all',
       to: ['authenticated'],
@@ -46,7 +45,7 @@ export const roles = cgdb.table(
     provider: cspEnum().notNull(),
   },
   () => [
-    pgPolicy('Enables all operations for authenticated users only', {
+    pgPolicy('Enables all operations for authenticated identities only', {
       as: 'permissive',
       for: 'all',
       to: ['authenticated'],
@@ -59,7 +58,7 @@ export const users = cgdb.table(
   'users',
   {
     id: uuid().defaultRandom().primaryKey().notNull(),
-    identityId: uuid('identity_id'),
+    identityId: uuid('identity_id').notNull(),
     provider: cspEnum().notNull(),
     providerId: text('provider_id').notNull(),
     username: text(),
@@ -75,7 +74,7 @@ export const users = cgdb.table(
     })
       .onUpdate('cascade')
       .onDelete('set null'),
-    pgPolicy('Enables all operations for authenticated users only', {
+    pgPolicy('Enables all operations for authenticated identities only', {
       as: 'permissive',
       for: 'all',
       to: ['authenticated'],
@@ -113,7 +112,7 @@ export const userAssignments = cgdb.table(
     })
       .onUpdate('cascade')
       .onDelete('set null'),
-    pgPolicy('Enables all operations for authenticated users only', {
+    pgPolicy('Enables all operations for authenticated identities only', {
       as: 'permissive',
       for: 'all',
       to: ['authenticated'],
@@ -142,7 +141,7 @@ export const awsRoleTrusts = cgdb.table(
     })
       .onUpdate('cascade')
       .onDelete('cascade'),
-    pgPolicy('Enables all operations for authenticated users only', {
+    pgPolicy('Enables all operations for authenticated identities only', {
       as: 'permissive',
       for: 'all',
       to: ['authenticated'],

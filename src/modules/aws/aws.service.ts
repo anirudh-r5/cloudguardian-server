@@ -1,10 +1,11 @@
 import {
-  SSOAdminClient,
-  ListInstancesCommand,
-  ListAccountAssignmentsCommand,
-  DescribePermissionSetCommand,
-  ListPermissionSetsCommand,
   AccountAssignment,
+  DescribePermissionSetCommand,
+  ListAccountAssignmentsCommand,
+  ListInstancesCommand,
+  ListPermissionSetsCommand,
+  SSOAdminClient,
+  ListManagedPoliciesInPermissionSetCommand,
 } from '@aws-sdk/client-sso-admin';
 
 import {
@@ -12,13 +13,23 @@ import {
   ListUsersCommand,
 } from '@aws-sdk/client-identitystore';
 
+import {
+  IAMClient,
+  ListRolesCommand,
+  ListAttachedRolePoliciesCommand,
+  GetPolicyVersionCommand,
+  ListPolicyVersionsCommand,
+} from '@aws-sdk/client-iam';
+
 import { Injectable } from '@nestjs/common';
+import { CloudIdentityType, RoleType } from '../utils/module-types';
 
 @Injectable()
 export class AwsService {
   private region = 'us-west-1';
   private ssoClient = new SSOAdminClient({ region: this.region });
   private idStoreClient = new IdentitystoreClient({ region: this.region });
+  private iamClient = new IAMClient({ region: this.region });
 
   async getIdentityStoreId() {
     const { Instances } = await this.ssoClient.send(
@@ -41,6 +52,46 @@ export class AwsService {
     return PermissionSets;
   }
 
+  async getPermissionSetsForRoles() {
+    const { instanceArn } = await this.getIdentityStoreId();
+    const permissionSets = await this.getPermissionSets();
+    if (!permissionSets) {
+      throw new Error('No permissions found');
+    }
+    const icRoles: RoleType[] = [];
+    for (const set of permissionSets) {
+      const { PermissionSet } = await this.ssoClient.send(
+        new DescribePermissionSetCommand({
+          InstanceArn: instanceArn,
+          PermissionSetArn: set,
+        }),
+      );
+      const { AttachedManagedPolicies } = await this.ssoClient.send(
+        new ListManagedPoliciesInPermissionSetCommand({
+          InstanceArn: instanceArn,
+          PermissionSetArn: set,
+        }),
+      );
+      const policies: string[] = [];
+      if (AttachedManagedPolicies) {
+        for (const attachedPolicy of AttachedManagedPolicies) {
+          if (attachedPolicy.Name) {
+            policies.push(attachedPolicy.Name);
+          }
+        }
+      }
+
+      const setName = PermissionSet?.Name ?? 'N/A';
+      icRoles.push({
+        id: set,
+        name: setName,
+        permissions: JSON.stringify(policies),
+        cloudProvider: 'aws',
+      });
+    }
+    return icRoles;
+  }
+
   async listUsers(identityStoreId: string) {
     const result = await this.idStoreClient.send(
       new ListUsersCommand({ IdentityStoreId: identityStoreId }),
@@ -48,7 +99,7 @@ export class AwsService {
     return result.Users || [];
   }
 
-  public async getUsersWithRoles(accountId: string) {
+  async getUsersWithRoles(accountId: string) {
     const { instanceArn, identityStoreId } = await this.getIdentityStoreId();
     const permissionSets = await this.getPermissionSets();
     if (!permissionSets) {
@@ -84,7 +135,8 @@ export class AwsService {
       if (assignment.PrincipalType === 'USER') {
         userRoleMap.push({
           userId: assignment.PrincipalId,
-          role: permissionSetDetails.PermissionSet?.Name ?? 'Unknown',
+          role:
+            permissionSetDetails.PermissionSet?.PermissionSetArn ?? 'Unknown',
         });
       }
     }
@@ -95,13 +147,54 @@ export class AwsService {
         .filter((r) => r.userId === userId)
         .map((r) => r.role);
 
-      return {
+      return <CloudIdentityType>{
         id: userId,
         name: user.DisplayName ?? user.UserName ?? 'Unnamed',
         email: user.Emails?.[0]?.Value ?? '',
-        cloudProvider: 'AWS',
+        cloudProvider: 'aws',
         roles: userRoles,
       };
     });
+  }
+
+  async getIamRoles() {
+    const command = new ListRolesCommand();
+    const roles = await this.iamClient.send(command);
+    if (!roles.Roles) {
+      throw new Error('No permissions found');
+    }
+    const awsRoles: RoleType[] = [];
+    for (const role of roles.Roles) {
+      const { AttachedPolicies } = await this.iamClient.send(
+        new ListAttachedRolePoliciesCommand({ RoleName: role.RoleName }),
+      );
+      if (AttachedPolicies) {
+        const attachedPolicies: string[] = [];
+        for (const policy of AttachedPolicies) {
+          const { Versions } = await this.iamClient.send(
+            new ListPolicyVersionsCommand({ PolicyArn: policy.PolicyArn }),
+          );
+          const defaultVersion = Versions?.find((v) => v.IsDefaultVersion);
+          const { PolicyVersion } = await this.iamClient.send(
+            new GetPolicyVersionCommand({
+              PolicyArn: policy.PolicyArn,
+              VersionId: defaultVersion?.VersionId ?? 'v1',
+            }),
+          );
+          const policyDocument = PolicyVersion?.Document ?? '';
+          attachedPolicies.push(policyDocument);
+        }
+        const roleName = role.RoleName ?? 'N/A';
+        const roleArn = role.Arn ?? 'N/A';
+        awsRoles.push({
+          id: roleArn,
+          name: roleName,
+          cloudProvider: 'aws',
+          permissions: JSON.stringify(attachedPolicies),
+        });
+      }
+    }
+
+    return awsRoles;
   }
 }

@@ -1,0 +1,16 @@
+type UserAssignment {
+    id: ID!
+    userId: ID!
+    roleId: ID!
+    assignedBy: String
+    assignedAt: String
+    updatedAt: String
+    source: String
+}
+
+extend type Query {
+    getAssignments: [UserAssignment]!
+    getAssignmentsByUserId(userId: ID!): [UserAssignment]!
+    getAssignmentsByRoleId(roleId: ID!): [UserAssignment]!
+    getAssignmentByRef(userId: ID!, roleId: ID!): UserAssignment
+}
