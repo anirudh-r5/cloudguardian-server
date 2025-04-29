@@ -11,11 +11,11 @@ export class IdentitiesService {
     return this.dz.select().from(identities);
   }
 
-  async getIdentitiesById(id: string) {
+  async getIdentityById(id: string) {
     return this.dz.select().from(identities).where(eq(identities.id, id));
   }
 
-  async getIdentitiesByEmail(email: string) {
+  async getIdentityByEmail(email: string) {
     return this.dz.select().from(identities).where(eq(identities.email, email));
   }
 }

@@ -1,7 +1,7 @@
 type User {
     id: ID!
     identityId: String!
-    provider: CloudProvider
+    provider: CloudProvider!
     providerId: String!
     username: String!
 }

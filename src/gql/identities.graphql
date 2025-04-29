@@ -1,0 +1,12 @@
+type Identity {
+    id: ID!
+    email: String!
+    fullName: String!
+    active: Boolean!
+}
+
+extend type Query {
+    getIdentities: [Identity]!
+    getIdentityById(id: ID!): Identity
+    getIdentityByEmail(email: String!): Identity
+}
