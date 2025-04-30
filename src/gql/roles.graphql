@@ -1,8 +1,8 @@
 type Role {
     id: ID!
     name: String!
-    permissions: String!
-    cloudProvider: CloudProvider!
+    permissions: [String]
+    provider: CloudProvider!
 }
 
 extend type Query {

@@ -3,6 +3,7 @@
 /node_modules
 /build
 /src/graphql.ts
+/drizzle
 
 # Logs
 logs

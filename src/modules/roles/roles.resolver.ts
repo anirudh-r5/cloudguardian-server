@@ -1,4 +1,4 @@
-import { Resolver, Query, Args } from '@nestjs/graphql';
+import { Args, Query, Resolver } from '@nestjs/graphql';
 import { RolesService } from './roles.service';
 
 @Resolver('Role')
@@ -7,7 +7,15 @@ export class RolesResolver {
 
   @Query('getRoles')
   async getRoles() {
-    return this.rolesService.getRoles();
+    const result = await this.rolesService.getRoles();
+    return result.map((r) => {
+      return {
+        ...r,
+        permissions: (r.permissions as Array<any>).map((p) =>
+          JSON.stringify(p),
+        ),
+      };
+    });
   }
 
   @Query('getRoleById')

@@ -6,6 +6,6 @@ import supabaseProvider from './supabase';
 
 @Module({
   imports: [ConfigModule],
-  providers: [supabaseProvider, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [supabaseProvider],
 })
 export class AuthModule {}

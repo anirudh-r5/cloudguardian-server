@@ -85,7 +85,7 @@ export class AwsService {
       icRoles.push({
         id: set,
         name: setName,
-        permissions: JSON.stringify(policies),
+        permissions: policies,
         cloudProvider: 'aws',
       });
     }
@@ -169,7 +169,7 @@ export class AwsService {
         new ListAttachedRolePoliciesCommand({ RoleName: role.RoleName }),
       );
       if (AttachedPolicies) {
-        const attachedPolicies: string[] = [];
+        const attachedPolicies: any[] = [];
         for (const policy of AttachedPolicies) {
           const { Versions } = await this.iamClient.send(
             new ListPolicyVersionsCommand({ PolicyArn: policy.PolicyArn }),
@@ -182,7 +182,7 @@ export class AwsService {
             }),
           );
           const policyDocument = PolicyVersion?.Document ?? '';
-          attachedPolicies.push(policyDocument);
+          attachedPolicies.push(JSON.parse(decodeURIComponent(policyDocument)));
         }
         const roleName = role.RoleName ?? 'N/A';
         const roleArn = role.Arn ?? 'N/A';
@@ -190,7 +190,7 @@ export class AwsService {
           id: roleArn,
           name: roleName,
           cloudProvider: 'aws',
-          permissions: JSON.stringify(attachedPolicies),
+          permissions: attachedPolicies,
         });
       }
     }

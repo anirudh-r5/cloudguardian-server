@@ -87,7 +87,7 @@ export class AzureService {
         id: roleId,
         name: roleName,
         cloudProvider: 'azure',
-        permissions: JSON.stringify(rolePerms),
+        permissions: rolePerms,
       });
     }
     return roles;

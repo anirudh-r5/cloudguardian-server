@@ -8,6 +8,6 @@ export type CloudIdentityType = {
 export type RoleType = {
   id: string;
   name: string;
-  permissions: string;
+  permissions: any[];
   cloudProvider: 'aws' | 'azure';
 };
