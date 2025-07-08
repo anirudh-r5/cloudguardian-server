@@ -3,13 +3,13 @@
 CloudGuardian is a cross-cloud identity and access review system designed to help administrators monitor and manage user identities and cloud resources across AWS, Azure, and other major cloud providers from a centralized backend. This repository contains the server-side application that interfaces with authentication providers and multiple cloud platforms.
 
 ## Features
-🔐 Federated identity integration with OAuth2, SAML, and OpenID Connect providers
-☁️ Cross-cloud support for querying metadata from AWS, Azure, and GCP APIs
-📊 Tracks identities and associated resources for orphan detection and access reviews
-🚨 Alerting system for misconfigured or suspicious resources
-📦 GraphQL API exposed to the frontend and third-party integrations
-🧩 Modular and extensible backend architecture
-⚡ Built with performance and scalability in mind using NestJS (Node.js and Fastify)
+- 🔐 Federated identity integration with OAuth2, SAML, and OpenID Connect providers
+- ☁️ Cross-cloud support for querying metadata from AWS, Azure, and GCP APIs
+- 📊 Tracks identities and associated resources for orphan detection and access reviews
+- 🚨 Alerting system for misconfigured or suspicious resources
+- 📦 GraphQL API exposed to the frontend and third-party integrations
+- 🧩 Modular and extensible backend architecture
+- ⚡ Built with performance and scalability in mind using NestJS (Node.js and Fastify)
 
 ## Tech Stack
 - Language: TypeScript
